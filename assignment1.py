@@ -1,15 +1,17 @@
 """
 IP Calculator: Given the address of the Host or the Network, calculate the various aspects of the subnet...
 """
-
+import tkinter as tk
+from tkinter import ttk
 from typing import List
 
 def calculateIP(address: List[int], netmask: int) -> dict:
     hosts = 2 ** (32 - netmask) - 2
-    n = f"Netmask/{netmask}"
+    netmaskStr = f"Netmask/{netmask}"
     netmaskList = [255] * (netmask // 8)
     netmask %= 8
-    netmaskList.append(256 - 2 ** (8 - netmask))
+    if netmask:
+        netmaskList.append(256 - 2 ** (8 - netmask))
     while len(netmaskList) != 4:
         netmaskList.append(0)
     
@@ -25,7 +27,7 @@ def calculateIP(address: List[int], netmask: int) -> dict:
     return {
         "IP" : {
             "Address" : address, 
-            n : netmaskList, 
+            netmaskStr : netmaskList, 
             "Wildcard" : wildcard,
             "NetworkID" : network,
             "Broadcast" : broadcast,
@@ -36,11 +38,7 @@ def calculateIP(address: List[int], netmask: int) -> dict:
     }
 
 def getBinary(lis: List[int]) -> List[str]:
-    binary = []
-    for num in lis:
-        binary.append(str(bin(num).replace("0b", "")).zfill(8))
-
-    return binary
+    return [format(num, '08b') for num in lis]
 
 def formatData(info: dict) -> str:
     data = ""
@@ -51,7 +49,7 @@ def formatData(info: dict) -> str:
 
     return data
 
-def main():
+def mainCLI():
     print("IP Calculator:\n")
     hostIP = input("Enter Host IP Address: ")
     netmask = int(input("Enter netmask (eg. 24): "))
@@ -60,6 +58,81 @@ def main():
     data = formatData(res)
     print(data)
 
-if __name__=="__main__":
-    main()
+def mainGUI():
 
+    def calculate_and_display():
+        host_ip = entry_ip.get()
+        netmask = int(entry_netmask.get())
+        host_ip = list(map(int, host_ip.split('.')))
+        res = calculateIP(host_ip, netmask)
+        formatted_data = formatDataForTable(res)
+        
+        # Clear the treeview
+        for item in tree.get_children():
+            tree.delete(item)
+        
+        # Insert new data
+        for key, value in formatted_data.items():
+            tree.insert('', 'end', values=(key, value[0], value[1]))
+
+    def formatDataForTable(info: dict) -> dict:
+        formatted_data = {}
+        for key, value in info["IP"].items():
+            formatted_data[key] = ('.'.join(map(str, value)), '.'.join(getBinary(value)))
+        formatted_data["Hosts/Net"] = (str(info["Hosts/Net"]), "")
+        return formatted_data
+
+    # Create the main window
+    root = tk.Tk()
+    root.title("IP Calculator")
+    root.geometry("700x500")
+    root.configure(bg="#2c3e50")
+
+    # Create and place the input fields
+    frame = ttk.Frame(root, padding="10", style="TFrame")
+    frame.grid(row=0, column=0, sticky=(tk.W, tk.E))
+
+    style = ttk.Style()
+    style.configure("TLabel", foreground="#ecf0f1", background="#2c3e50", font=("Helvetica", 12))
+    style.configure("TButton", foreground="#2c3e50", background="#ecf0f1", font=("Helvetica", 12, "bold"))
+    style.configure("TFrame", background="#2c3e50")
+    style.configure("TEntry", font=("Helvetica", 12))
+
+    ttk.Label(frame, text="Enter Host IP Address:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
+    entry_ip = ttk.Entry(frame, width=20, font=("Helvetica", 12))
+    entry_ip.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=5, pady=5)
+
+    ttk.Label(frame, text="Enter netmask (e.g., 24):").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
+    entry_netmask = ttk.Entry(frame, width=10, font=("Helvetica", 12))
+    entry_netmask.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=5, pady=5)
+
+    # Create and place the calculate button
+    calculate_button = ttk.Button(frame, text="Calculate", command=calculate_and_display, style="TButton")
+    calculate_button.grid(row=2, column=0, columnspan=2, pady=10)
+
+    # Create and place the output table
+    output_frame = ttk.Frame(root, padding="10", style="TFrame")
+    output_frame.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=10, pady=10)
+
+    columns = ('Property', 'Decimal', 'Binary')
+    tree = ttk.Treeview(output_frame, columns=columns, show='headings', height=15)
+    tree.heading('Property', text='Property')
+    tree.heading('Decimal', text='Decimal')
+    tree.heading('Binary', text='Binary')
+
+    tree.column('Property', anchor=tk.W, width=200)
+    tree.column('Decimal', anchor=tk.W, width=200)
+    tree.column('Binary', anchor=tk.W, width=300)
+
+    tree.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+
+    scroll = ttk.Scrollbar(output_frame, orient=tk.VERTICAL, command=tree.yview)
+    tree.configure(yscroll=scroll.set)
+    scroll.grid(row=0, column=1, sticky='ns')
+
+    # Run the application
+    root.mainloop()
+
+if __name__=="__main__":
+    # mainCLI()
+    mainGUI()
