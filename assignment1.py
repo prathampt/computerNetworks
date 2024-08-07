@@ -6,6 +6,21 @@ from tkinter import ttk
 from typing import List
 
 def calculateIP(address: List[int], netmask: int) -> dict:
+    cls = ""
+    noOfSubnets = 0
+    if address[0] == 127:
+        cls = "Loop Back"
+    elif address[0] & 128 == 0:
+        cls = "Class A"
+        noOfSubnets = 2 ** (netmask - 8)
+    elif address[0] & 64 == 0:
+        cls = "Class B"
+        noOfSubnets = 2 ** (netmask - 16)
+    elif address[0] & 32 == 0:
+        cls = "Class C"
+        noOfSubnets = 2 ** (netmask - 24)
+    else:
+        cls = "Class D (Research)"
     hosts = 2 ** (32 - netmask) - 2
     netmaskStr = f"Netmask/{netmask}"
     netmaskList = [255] * (netmask // 8)
@@ -34,7 +49,9 @@ def calculateIP(address: List[int], netmask: int) -> dict:
             "HostMin" : hostmin,
             "HostMax" : hostmax
         }, 
-        "Hosts/Net" : hosts
+        "Number of Subnets" : noOfSubnets,
+        "Number of IP's per Subnet" : hosts, 
+        "Class" : cls
     }
 
 def getBinary(lis: List[int]) -> List[str]:
@@ -45,7 +62,9 @@ def formatData(info: dict) -> str:
     for key, value in info["IP"].items():
         data += key + ":\t" + '.'.join(map(lambda x: str(x), value)) + "\t" + '.'.join(getBinary(value)) + '\n'
 
-    data += "Hosts/Net:\t" + str(info["Hosts/Net"])
+    data += "Number of Subnets:\t" + str(info["Number of Subnets"]) + "\n"
+    data += "Number of IP's per Subnet:\t" + str(info["Number of IP's per Subnet"]) + "\n"
+    data += "Class:\t" + str(info["Class"])
 
     return data
 
@@ -53,6 +72,9 @@ def mainCLI():
     print("IP Calculator:\n")
     hostIP = input("Enter Host IP Address: ")
     netmask = int(input("Enter netmask (eg. 24): "))
+    if netmask in [31, 32]: 
+        print("Sorry! /32 and /31 SubNet is not possible...")
+        return None
     hostIP = list(map(int, hostIP.split('.')))
     res = calculateIP(hostIP, netmask)
     data = formatData(res)
@@ -63,6 +85,9 @@ def mainGUI():
     def calculate_and_display():
         host_ip = entry_ip.get()
         netmask = int(entry_netmask.get())
+        if netmask in [31, 32]: 
+            tree.insert('', 'end', values=("Sorry!!!", "/31 and /32 SubNet isn't possible..."))
+            return None
         host_ip = list(map(int, host_ip.split('.')))
         res = calculateIP(host_ip, netmask)
         formatted_data = formatDataForTable(res)
@@ -79,7 +104,9 @@ def mainGUI():
         formatted_data = {}
         for key, value in info["IP"].items():
             formatted_data[key] = ('.'.join(map(str, value)), '.'.join(getBinary(value)))
-        formatted_data["Hosts/Net"] = (str(info["Hosts/Net"]), "")
+        formatted_data["Number of Subnets"] = (str(info["Number of Subnets"]), "")
+        formatted_data["Number of IP's per Subnet"] = (str(info["Number of IP's per Subnet"]), "")
+        formatted_data["Class"] = (str(info["Class"]), "")
         return formatted_data
 
     # Create the main window
