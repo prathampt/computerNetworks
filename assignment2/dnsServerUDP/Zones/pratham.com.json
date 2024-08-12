@@ -1,0 +1,32 @@
+{
+    "$origin": "pratham.com",
+    "$ttl": 86400,
+    "a": [
+      {
+        "name": "pratham.com",
+        "ttl": 300,
+        "value": "203.0.113.10"
+      },
+      {
+        "name": "www.pratham.com",
+        "ttl": 300,
+        "value": "203.0.113.11"
+      },
+      {
+        "name": "api.pratham.com",
+        "ttl": 300,
+        "value": "203.0.113.12"
+      },
+      {
+        "name": "mail.pratham.com",
+        "ttl": 300,
+        "value": "203.0.113.13"
+      },
+      {
+        "name": "dev.pratham.com",
+        "ttl": 300,
+        "value": "203.0.113.14"
+      }
+    ]
+  }
+  

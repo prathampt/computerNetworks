@@ -1,0 +1,22 @@
+{
+    "$origin": "example.com",
+    "$ttl": 86400,
+    "a": [
+      {
+        "name": "example.com",
+        "ttl": 3600,
+        "value": "192.168.1.10"
+      },
+      {
+        "name": "www.example.com",
+        "ttl": 3600,
+        "value": "192.168.1.11"
+      },
+      {
+        "name": "mail.example.com",
+        "ttl": 3600,
+        "value": "192.168.1.12"
+      }
+    ]
+  }
+  
