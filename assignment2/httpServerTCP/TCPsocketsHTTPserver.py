@@ -2,7 +2,7 @@ import socket
 
 # Define the IP and port for the server to listen on
 HOST = '127.0.0.1'  # Localhost
-PORT = 8080         # Non-privileged port
+PORT = 80        # Non-privileged port
 
 # Create a socket object
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:

@@ -164,6 +164,7 @@ class DNSGen:
         if records is None:  # If no records found, query Google DNS
             print(f"No local records found for {domain_name}. Querying Google DNS.")
             return self._forward_to_google(self.data)
+        print(domain_name)
         return (
             self._make_header(len(records)) +
             self._make_question(len(records), record_type, domain_name) +
