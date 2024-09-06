@@ -57,6 +57,6 @@ class Server:
             thread = threading.Thread(target=self.handle, args=(client,))
             thread.start()
 
-
-s = Server("127.0.0.1", 55555)
-s.start()
+if __name__ == "__main__":
+    s = Server("127.0.0.1", 55555)
+    s.start()

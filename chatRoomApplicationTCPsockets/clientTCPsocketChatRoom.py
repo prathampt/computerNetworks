@@ -38,7 +38,7 @@ class Client:
         self.write_thread.start()
 
 
-
-nickname = input("Choose your nickname: ")
-c = Client('127.0.0.1', 55555, nickname)
-c.start()
+if __name__ == "__main__":
+    nickname = input("Choose your nickname: ")
+    c = Client('127.0.0.1', 55555, nickname)
+    c.start()
