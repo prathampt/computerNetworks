@@ -1,2 +1,7 @@
 *.zip
-
+images/
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.odt
