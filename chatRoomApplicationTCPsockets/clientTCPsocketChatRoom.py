@@ -6,15 +6,19 @@ class Client:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((host, port))
         self.nickname = nickname
+        self.running = True
 
     # Listening to Server and Sending Nickname
     def receive(self):
-        while True:
+        while self.running:
             try:
                 # Receive Message From Server
                 # If 'NICK' Send Nickname
                 message = self.client.recv(1024).decode('utf-8')
-                if message == 'NICK':
+                if not message:
+                    self.client.close()
+                    break
+                elif message == 'NICK':
                     self.client.send(nickname.encode('utf-8'))
                 else:
                     print(message)
@@ -26,9 +30,15 @@ class Client:
 
     # Sending Messages To Server
     def write(self):
-        while True:
-            message = '{}: {}'.format(nickname, input(''))
-            self.client.send(message.encode('utf-8'))
+        while self.running:
+            message = input('')
+            if message.lower() == 'exit':
+                self.client.send(f'Exiting form the chat. Exit code ##!0'.encode('utf-8'))
+                self.client.close()
+                self.running = False
+                print("Disconnected from the server.")
+            else:
+                self.client.send(f"{message}".encode('utf-8'))
 
     def start(self):
         self.receive_thread = threading.Thread(target=self.receive)

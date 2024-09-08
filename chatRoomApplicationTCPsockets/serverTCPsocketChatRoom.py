@@ -1,5 +1,6 @@
 import socket
 import threading
+from datetime import datetime
 
 class Server:
     def __init__(self, host, port):
@@ -13,9 +14,10 @@ class Server:
 
     # Sending Messages To All Connected Clients
     def broadcast(self, message, selfClient):
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         for client in self.clients:
             if selfClient != client:
-                client.send(message)
+                client.send(f"[{timestamp}] {message}".encode('utf-8'))
 
     # Handling Messages From Clients
     def handle(self, client):
@@ -23,14 +25,33 @@ class Server:
             try:
                 # Broadcasting Messages
                 message = client.recv(1024)
-                self.broadcast(message, client)
+                if not message:
+                    raise Exception("Client disconnected")
+                
+                decoded_message = message.decode('utf-8')
+            
+                # Check for disconnect message
+                if "Exiting form the chat. Exit code ##!0" in decoded_message:
+                    index = self.clients.index(client)
+                    nickname = self.nicknames[index]
+                    self.clients.remove(client)
+                    client.close()
+                    self.nicknames.remove(nickname)
+                    self.broadcast(f"{nickname} has left the chat!", None)
+                    break
+
+                index = self.clients.index(client)
+                nickname = self.nicknames[index]
+                formatted_message = f"{nickname}: {message.decode('utf-8')}"
+                self.broadcast(formatted_message, client)
             except:
                 # Removing And Closing Clients
                 index = self.clients.index(client)
                 self.clients.remove(client)
                 client.close()
+                print("{} disconnected!".format(self.nicknames[index]))
                 nickname = self.nicknames[index]
-                self.broadcast('{} left!'.format(nickname).encode('utf-8'), client)
+                self.broadcast(f"{nickname} left the chat!", client)
                 self.nicknames.remove(nickname)
                 break
     # Receiving / Listening Function
@@ -44,14 +65,15 @@ class Server:
             # Request And Store Nickname
             client.send('NICK'.encode('utf-8'))
             nickname = client.recv(1024).decode('utf-8')
-            self.clients.append(client)
-
+                
             # Print And Broadcast Nickname
             print("{} joined the server!".format(nickname))
-            self.broadcast("{} joined!".format(nickname).encode('utf-8'), client)
+            self.broadcast("{} joined!".format(nickname), client)
             client.send('Connected to server!'.encode('utf-8'))
             client.send(str(f"Connected Users: {len(self.nicknames)}\n" + "\n".join(self.nicknames)).encode('utf-8'))
-            self.nicknames.append(nickname)
+            with threading.Lock():
+                self.nicknames.append(nickname)
+                self.clients.append(client)
 
             # Start Handling Thread For Client
             thread = threading.Thread(target=self.handle, args=(client,))
