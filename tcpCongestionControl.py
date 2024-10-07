@@ -86,7 +86,7 @@ class TCPReno(TCPAIMD):
                 fast_recovery = False
             elif not self.simulate_round(round_num):  # Packet loss
                 self.ssthresh = max(self.cwnd // 2, 1)
-                self.cwnd = self.ssthresh  # Fast recovery, cwnd reduced to half
+                self.cwnd = self.ssthresh # Fast recovery, cwnd reduced to half
                 fast_recovery = True
                 print(f"Packet loss! New ssthresh={self.ssthresh}, cwnd={self.cwnd}")
             else:
